@@ -7,4 +7,4 @@ Refer to [Orthrus](https://github.com/ubc-provenance/orthrus/tree/main/postgres)
 ##### Rewriting Megr-APT
 We rewrote the SQL query portion that the Megr-APT originally created using RDF graph database.
 ##### Get Tag Information
-You can get tag information for CADETS (E3 and E5) and THEIA (E3 and E5) from [here](https://github.com/ubc-provenance/orthrus/tree/main/postgres).
+You can get tag information for CADETS (E3 and E5) and THEIA (E3 and E5) from [here](https://drive.google.com/file/d/1AVC0ztL-hcjEBqAR1jwxEBgXfYGfjgWi/view?usp=drive_link).
