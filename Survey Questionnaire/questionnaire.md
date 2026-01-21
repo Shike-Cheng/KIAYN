@@ -133,10 +133,10 @@ Thank you for your participation and support.
 
 **5. In APT attack analysis, which combination of knowledge sources do you consider most effective? Please rank the following knowledge source combinations from most effective to least effective (1 = most effective, 4 = least effective)** 
 *Ranking question*
-Attack representation knowledge + Threat intelligence knowledge
-Attack representation knowledge + Benign behavior knowledge
-Threat intelligence knowledge + Benign behavior knowledge
-Attack representation knowledge + Threat intelligence knowledge + Benign behavior knowledge
+- Attack representation knowledge + Threat intelligence knowledge
+- Attack representation knowledge + Benign behavior knowledge
+- Threat intelligence knowledge + Benign behavior knowledge
+- Attack representation knowledge + Threat intelligence knowledge + Benign behavior knowledge
 
 ## Part IV: Challenges and Improvement Recommendations
 **1. What are the primary challenges you encounter when integrating multi-source knowledge for APT analysis?** 
