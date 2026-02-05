@@ -798,10 +798,9 @@ def process_one_graph(pg_name, query_graph_name):
         print("\nExtraction Memory usage: ", process.memory_info().rss / (1024 ** 2), "MB (based on psutil Lib)")
         print_memory_cpu_usage("Extraction")
         return
-    print("chengc*********************************")
     
     checkpoint(suspSubGraphs,
-               ("/root/MEGR-APT/dataset/darpa_cadets/experiments/chengc" + "/predict/nx_suspicious_" + query_graph_name + "_in_" + pg_name + ".pt"))
+               ("/root/MEGR-APT/dataset/darpa_cadets/experiments/" + "/predict/nx_suspicious_" + query_graph_name + "_in_" + pg_name + ".pt"))
 
     for i in range(1, 4):
         print("\nCheck Quality for", i, " IOCs of corresponding query graph")
@@ -813,7 +812,7 @@ def process_one_graph(pg_name, query_graph_name):
                 print("No accepted subgraphs for", pg_name, "with", query_graph_name)
                 return
             checkpoint(accepted_suspSubGraphs, (
-                        "/root/MEGR-APT/dataset/darpa_cadets/experiments/chengc" + "/predict/nx_accepted_suspSubGraphs_" + query_graph_name + "_in_" + pg_name + ".pt"))
+                        "/root/MEGR-APT/dataset/darpa_cadets/experiments/" + "/predict/nx_accepted_suspSubGraphs_" + query_graph_name + "_in_" + pg_name + ".pt"))
             suspSubGraphs = accepted_suspSubGraphs
         else:
             subgraph_quality_check_per_query(suspSubGraphs, suspicious_nodes, min_iocs=i)
@@ -842,13 +841,13 @@ def process_one_graph(pg_name, query_graph_name):
     print(query_graph_name)
     print(sum_sus_nodes)
     checkpoint(prediction_graphs_dgl,
-               ("/root/MEGR-APT/dataset/darpa_cadets/experiments/chengc" + "/predict/dgl_prediction_graphs_" + query_graph_name + "_in_" + pg_name + ".pt"))
+               ("/root/MEGR-APT/dataset/darpa_cadets/experiments/" + "/predict/dgl_prediction_graphs_" + query_graph_name + "_in_" + pg_name + ".pt"))
 
     suspSubGraphs, suspicious_nodes, all_suspicious_nodes = None, None, None
     prediction_data_list_host = convert_prediction_to_torch_data(prediction_graphs_dgl, pg_name)
     prediction_graphs_dgl= None
     print("Number of prediction samples from host", pg_name, len(prediction_data_list_host))
-    checkpoint(prediction_data_list_host, ("/root/MEGR-APT/dataset/darpa_cadets/experiments/chengc" + "/raw/torch_prediction/" + query_graph_name + "_in_" + pg_name + ".pt"))
+    checkpoint(prediction_data_list_host, ("/root/MEGR-APT/dataset/darpa_cadets/experiments/" + "/raw/torch_prediction/" + query_graph_name + "_in_" + pg_name + ".pt"))
 
     prediction_data_list_host = None
     extraction_mem = getrusage(RUSAGE_SELF).ru_maxrss - start_mem
@@ -961,7 +960,7 @@ def main():
     print("processed", len(query_data_list), "query graphs")
     
     checkpoint(query_data_list,
-               ("/root/MEGR-APT/dataset/darpa_cadets/experiments/chengc" + "/raw/torch_query_dataset.pt"))
+               ("/root/MEGR-APT/dataset/darpa_cadets/experiments/" + "/raw/torch_query_dataset.pt"))
 
 
     # 计算n-hop
