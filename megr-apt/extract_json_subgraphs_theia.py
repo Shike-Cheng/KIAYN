@@ -43,8 +43,8 @@ parser.add_argument('--max-edges-training', type=int, help='Maximum number of ed
 parser.add_argument('--min-iocs', type=int, help='Minimum number of Query Graph IOCs to accept subgraph', default=1)
 parser.add_argument('--output-prx', type=str, help='output file prefix ', default=None)
 parser.add_argument('--parallel', help='Encode Subgraphs in parallel', action="store_true", default=False)
-parser.add_argument('--query-graphs-folder', nargs="?", help='Path of Query Graph folder', default="/root/MEGR-APT/dataset/darpa_theia/query_graphs/")
-parser.add_argument('--ioc-file', nargs="?", help='Path of Query Graph IOCs file',default="/root/MEGR-APT/dataset/darpa_theia/query_graphs_IOCs.json")
+parser.add_argument('--query-graphs-folder', nargs="?", help='Path of Query Graph folder', default="./MEGR-APT/dataset/darpa_theia/query_graphs/")
+parser.add_argument('--ioc-file', nargs="?", help='Path of Query Graph IOCs file',default="./MEGR-APT/dataset/darpa_theia/query_graphs_IOCs.json")
 parser.add_argument('--dataset', nargs="?", help='Dataset name', default="darpa_theia")
 parser.add_argument('--training', help='Prepare training set', action="store_true", default=False)
 parser.add_argument('--n-subgraphs', type=int, help='Number of Subgraph', default=None)
@@ -134,11 +134,6 @@ def label_candidate_nodes(query_graph_name, provenance_graph):
     for ioc, nodes in suspicious_nodes.items():
         print(f"IOC {ioc}: matched {len(nodes)} nodes")
 
-    # for ioc in ioc_files:
-    #     ioc_pattern = "\"^(.*=>)?" + ioc + "(=>.*)?$\""
-    #     csv_results = conn.select(graph_sparql_queries['Query_Suspicious_Files'], content_type='text/csv',bindings={'IOC': ioc_pattern}, timeout=900000)
-    #     suspicious_nodes[ioc] = list(pd.read_csv(io.BytesIO(csv_results))["uuid"])
-    
  
     for ip in ioc_ips:
         suspicious_nodes[ip] = []
@@ -155,12 +150,6 @@ def label_candidate_nodes(query_graph_name, provenance_graph):
     for ip, nodes in suspicious_nodes.items():
         print(f"IOC IP {ip}: matched {len(nodes)} nodes")
 
-    # ioc_ips_string = str('( \"' + "\", \"".join(ioc_ips) + '\" )')
-    # graph_sparql_queries['Query_Suspicious_IP'] = graph_sparql_queries['Query_Suspicious_IP'].replace("<IOC_IP_LIST>",ioc_ips_string)
-    # csv_results = conn.select(graph_sparql_queries['Query_Suspicious_IP'], content_type='text/csv', timeout=1200000)
-    # df_suspicious_ip = pd.read_csv(io.BytesIO(csv_results))
-    # for _, row in df_suspicious_ip.iterrows():
-    #     suspicious_nodes[row["ip"]].append(row["uuid"])
 
 
     count_suspicious_nodes = {}
@@ -171,14 +160,6 @@ def label_candidate_nodes(query_graph_name, provenance_graph):
     print("\nTotal number of matched nodes:", len(all_suspicious_nodes))
     print(count_suspicious_nodes)
     
-    # all_suspicious_nodes_string = str('( \"' + "\", \"".join(all_suspicious_nodes) + '\" )')
-    # Label_Suspicious_Nodes = graph_sparql_queries['Label_Suspicious_Nodes'].replace("<SUSPICIOUS_LIST>",
-    #                                                                                 all_suspicious_nodes_string)
-    # conn.update(Label_Suspicious_Nodes)
-    # print("labelling Suspicious nodes in: --- %s seconds ---" % (time.time() - start_time))
-    # print("Memory usage : ", process.memory_info().rss / (1024 ** 2), "MB")
-    # print_memory_cpu_usage("Labelling candidate nodes")
-    # conn.close()
     
     if args.training:
         return
@@ -805,7 +786,7 @@ def process_one_graph(pg_name, query_graph_name):
         return
     
     checkpoint(suspSubGraphs,
-               ("/root/MEGR-APT/dataset/darpa_theia/experiments/" + "/predict/nx_suspicious_" + query_graph_name + "_in_" + pg_name + ".pt"))
+               ("./MEGR-APT/dataset/darpa_theia/experiments/" + "/predict/nx_suspicious_" + query_graph_name + "_in_" + pg_name + ".pt"))
 
     for i in range(1, 4):
         print("\nCheck Quality for", i, " IOCs of corresponding query graph")
@@ -817,7 +798,7 @@ def process_one_graph(pg_name, query_graph_name):
                 print("No accepted subgraphs for", pg_name, "with", query_graph_name)
                 return
             checkpoint(accepted_suspSubGraphs, (
-                        "/root/MEGR-APT/dataset/darpa_theia/experiments/" + "/predict/nx_accepted_suspSubGraphs_" + query_graph_name + "_in_" + pg_name + ".pt"))
+                        "./MEGR-APT/dataset/darpa_theia/experiments/" + "/predict/nx_accepted_suspSubGraphs_" + query_graph_name + "_in_" + pg_name + ".pt"))
             suspSubGraphs = accepted_suspSubGraphs
         else:
             subgraph_quality_check_per_query(suspSubGraphs, suspicious_nodes, min_iocs=i)
@@ -846,13 +827,13 @@ def process_one_graph(pg_name, query_graph_name):
     print(query_graph_name)
     print(sum_sus_nodes)
     checkpoint(prediction_graphs_dgl,
-               ("/root/MEGR-APT/dataset/darpa_theia/experiments/" + "/predict/dgl_prediction_graphs_" + query_graph_name + "_in_" + pg_name + ".pt"))
+               ("./MEGR-APT/dataset/darpa_theia/experiments/" + "/predict/dgl_prediction_graphs_" + query_graph_name + "_in_" + pg_name + ".pt"))
 
     suspSubGraphs, suspicious_nodes, all_suspicious_nodes = None, None, None
     prediction_data_list_host = convert_prediction_to_torch_data(prediction_graphs_dgl, pg_name)
     prediction_graphs_dgl= None
     print("Number of prediction samples from host", pg_name, len(prediction_data_list_host))
-    checkpoint(prediction_data_list_host, ("/root/MEGR-APT/dataset/darpa_theia/experiments/" + "/raw/torch_prediction/" + query_graph_name + "_in_" + pg_name + ".pt"))
+    checkpoint(prediction_data_list_host, ("./MEGR-APT/dataset/darpa_theia/experiments/" + "/raw/torch_prediction/" + query_graph_name + "_in_" + pg_name + ".pt"))
 
     prediction_data_list_host = None
     extraction_mem = getrusage(RUSAGE_SELF).ru_maxrss - start_mem
@@ -913,7 +894,7 @@ def release_memory(client):
     client.run(trim_memory)
 
 def read_json_graph(json_file):
-    """读取 NetworkX node-link JSON 格式"""
+
     with open(json_file, "r", encoding="utf-8") as f:
         data = json.load(f)
     return json_graph.node_link_graph(data, multigraph=True, directed=True)
@@ -965,7 +946,7 @@ def main():
     print("processed", len(query_data_list), "query graphs")
 
     checkpoint(query_data_list,
-               ("/root/MEGR-APT/dataset/darpa_theia/experiments/" + "/raw/torch_query_dataset.pt"))
+               ("./MEGR-APT/dataset/darpa_theia/experiments/" + "/raw/torch_query_dataset.pt"))
 
 
     global n_hops
