@@ -43,8 +43,8 @@ parser.add_argument('--max-edges-training', type=int, help='Maximum number of ed
 parser.add_argument('--min-iocs', type=int, help='Minimum number of Query Graph IOCs to accept subgraph', default=1)
 parser.add_argument('--output-prx', type=str, help='output file prefix ', default=None)
 parser.add_argument('--parallel', help='Encode Subgraphs in parallel', action="store_true", default=False)
-parser.add_argument('--query-graphs-folder', nargs="?", help='Path of Query Graph folder', default="/root/MEGR-APT/dataset/darpa_cadets/query_graphs/")
-parser.add_argument('--ioc-file', nargs="?", help='Path of Query Graph IOCs file', default="/root/MEGR-APT/dataset/darpa_cadets/query_graphs_IOCs.json")
+parser.add_argument('--query-graphs-folder', nargs="?", help='Path of Query Graph folder', default="./MEGR-APT/dataset/darpa_cadets/query_graphs/")
+parser.add_argument('--ioc-file', nargs="?", help='Path of Query Graph IOCs file', default="./MEGR-APT/dataset/darpa_cadets/query_graphs_IOCs.json")
 parser.add_argument('--dataset', nargs="?", help='Dataset name', default="darpa_cadets")
 parser.add_argument('--training', help='Prepare training set', action="store_true", default=False)
 parser.add_argument('--n-subgraphs', type=int, help='Number of Subgraph', default=None)
@@ -132,38 +132,22 @@ def label_candidate_nodes(query_graph_name, provenance_graph):
 
     for ioc, nodes in suspicious_nodes.items():
         print(f"IOC {ioc}: matched {len(nodes)} nodes")
-
-    # for ioc in ioc_files:
-    #     ioc_pattern = "\"^(.*=>)?" + ioc + "(=>.*)?$\""
-    #     csv_results = conn.select(graph_sparql_queries['Query_Suspicious_Files'], content_type='text/csv',bindings={'IOC': ioc_pattern}, timeout=900000)
-    #     suspicious_nodes[ioc] = list(pd.read_csv(io.BytesIO(csv_results))["uuid"])
     
     for ip in ioc_ips:
         suspicious_nodes[ip] = []
 
     for node_id, attrs in provenance_graph.nodes(data=True):
         node_type = attrs.get("type", "").lower()
-        if node_type != "flow":  # 只匹配 type 为 "flow" 的节点
+        if node_type != "flow":
             continue
 
         remote_ip = attrs.get("remote_ip", None)
         if remote_ip and remote_ip in ioc_ips:
             suspicious_nodes[remote_ip].append(node_id)
 
-    # 查看结果
     for ip, nodes in suspicious_nodes.items():
         print(f"IOC IP {ip}: matched {len(nodes)} nodes")
 
-    # ioc_ips_string = str('( \"' + "\", \"".join(ioc_ips) + '\" )')
-    # graph_sparql_queries['Query_Suspicious_IP'] = graph_sparql_queries['Query_Suspicious_IP'].replace("<IOC_IP_LIST>",ioc_ips_string)
-    # csv_results = conn.select(graph_sparql_queries['Query_Suspicious_IP'], content_type='text/csv', timeout=1200000)
-    # df_suspicious_ip = pd.read_csv(io.BytesIO(csv_results))
-    # for _, row in df_suspicious_ip.iterrows():
-    #     suspicious_nodes[row["ip"]].append(row["uuid"])
-
-
-    # 截止到这里，suspicious_nodes存储的是{ioc:[id1, id2, ...], ioc[]}
-    # 计算个数
     count_suspicious_nodes = {}
     for n in suspicious_nodes:
         count_suspicious_nodes[n] = len(suspicious_nodes[n])
@@ -171,15 +155,7 @@ def label_candidate_nodes(query_graph_name, provenance_graph):
     
     print("\nTotal number of matched nodes:", len(all_suspicious_nodes))
     print(count_suspicious_nodes)
-    
-    # all_suspicious_nodes_string = str('( \"' + "\", \"".join(all_suspicious_nodes) + '\" )')
-    # Label_Suspicious_Nodes = graph_sparql_queries['Label_Suspicious_Nodes'].replace("<SUSPICIOUS_LIST>",
-    #                                                                                 all_suspicious_nodes_string)
-    # conn.update(Label_Suspicious_Nodes)
-    # print("labelling Suspicious nodes in: --- %s seconds ---" % (time.time() - start_time))
-    # print("Memory usage : ", process.memory_info().rss / (1024 ** 2), "MB")
-    # print_memory_cpu_usage("Labelling candidate nodes")
-    # conn.close()
+
     
     if args.training:
         return
@@ -788,7 +764,7 @@ def process_one_graph(pg_name, query_graph_name):
         print_memory_cpu_usage("Extraction")
         return
 
-    suspSubGraphs = extract_suspGraphs_depth(provenance_graph, suspicious_nodes, all_suspicious_nodes)   # 需要改写
+    suspSubGraphs = extract_suspGraphs_depth(provenance_graph, suspicious_nodes, all_suspicious_nodes)
     
     
     if len(suspSubGraphs) == 0:
@@ -800,7 +776,7 @@ def process_one_graph(pg_name, query_graph_name):
         return
     
     checkpoint(suspSubGraphs,
-               ("/root/MEGR-APT/dataset/darpa_cadets/experiments/" + "/predict/nx_suspicious_" + query_graph_name + "_in_" + pg_name + ".pt"))
+               ("./MEGR-APT/dataset/darpa_cadets/experiments/" + "/predict/nx_suspicious_" + query_graph_name + "_in_" + pg_name + ".pt"))
 
     for i in range(1, 4):
         print("\nCheck Quality for", i, " IOCs of corresponding query graph")
@@ -812,7 +788,7 @@ def process_one_graph(pg_name, query_graph_name):
                 print("No accepted subgraphs for", pg_name, "with", query_graph_name)
                 return
             checkpoint(accepted_suspSubGraphs, (
-                        "/root/MEGR-APT/dataset/darpa_cadets/experiments/" + "/predict/nx_accepted_suspSubGraphs_" + query_graph_name + "_in_" + pg_name + ".pt"))
+                        "./MEGR-APT/dataset/darpa_cadets/experiments/" + "/predict/nx_accepted_suspSubGraphs_" + query_graph_name + "_in_" + pg_name + ".pt"))
             suspSubGraphs = accepted_suspSubGraphs
         else:
             subgraph_quality_check_per_query(suspSubGraphs, suspicious_nodes, min_iocs=i)
@@ -841,13 +817,13 @@ def process_one_graph(pg_name, query_graph_name):
     print(query_graph_name)
     print(sum_sus_nodes)
     checkpoint(prediction_graphs_dgl,
-               ("/root/MEGR-APT/dataset/darpa_cadets/experiments/" + "/predict/dgl_prediction_graphs_" + query_graph_name + "_in_" + pg_name + ".pt"))
+               ("./MEGR-APT/dataset/darpa_cadets/experiments/" + "/predict/dgl_prediction_graphs_" + query_graph_name + "_in_" + pg_name + ".pt"))
 
     suspSubGraphs, suspicious_nodes, all_suspicious_nodes = None, None, None
     prediction_data_list_host = convert_prediction_to_torch_data(prediction_graphs_dgl, pg_name)
     prediction_graphs_dgl= None
     print("Number of prediction samples from host", pg_name, len(prediction_data_list_host))
-    checkpoint(prediction_data_list_host, ("/root/MEGR-APT/dataset/darpa_cadets/experiments/" + "/raw/torch_prediction/" + query_graph_name + "_in_" + pg_name + ".pt"))
+    checkpoint(prediction_data_list_host, ("./MEGR-APT/dataset/darpa_cadets/experiments/" + "/raw/torch_prediction/" + query_graph_name + "_in_" + pg_name + ".pt"))
 
     prediction_data_list_host = None
     extraction_mem = getrusage(RUSAGE_SELF).ru_maxrss - start_mem
@@ -960,10 +936,8 @@ def main():
     print("processed", len(query_data_list), "query graphs")
     
     checkpoint(query_data_list,
-               ("/root/MEGR-APT/dataset/darpa_cadets/experiments/" + "/raw/torch_query_dataset.pt"))
+               ("./MEGR-APT/dataset/darpa_cadets/experiments/" + "/raw/torch_query_dataset.pt"))
 
-
-    # 计算n-hop
     global n_hops
     n_hops = (sum_depth // len(query_graphs)) // 2
 
